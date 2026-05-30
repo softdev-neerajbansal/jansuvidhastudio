@@ -1,0 +1,21 @@
+Options -MultiViews -Indexes
+RewriteEngine On
+
+# ── Serve PHP proxy files and static assets as-is ──────────
+RewriteCond %{REQUEST_URI} ^/api/.*\.php [OR]
+RewriteCond %{REQUEST_URI} ^/IFSC\.csv$
+RewriteRule ^ - [L]
+
+# ── Rewrite /api/ifsc/{CODE} → ifsc.php?code={CODE} ────────
+RewriteRule ^api/ifsc/([A-Z0-9]+)/?$ /api/ifsc.php?code=$1 [L,QSA]
+
+# ── Rewrite /api/pincode/pincode/{PIN} → pincode.php ───────
+RewriteRule ^api/pincode/pincode/([0-9]+)/?$ /api/pincode.php?pin=$1 [L,QSA]
+
+# ── Rewrite /api/postoffice/postoffice/{NAME} → postoffice.php
+RewriteRule ^api/postoffice/postoffice/(.+)/?$ /api/postoffice.php?name=$1 [L,QSA]
+
+# ── SPA fallback — all other paths → index.html ────────────
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ /index.html [L]

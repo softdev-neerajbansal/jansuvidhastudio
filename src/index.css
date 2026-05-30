@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+html.dark  body { background: #0a0d16; color: #e2e8f0; }
+html:not(.dark) body { background: #f3f4f8; color: #0f172a; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg,#f97316,#16a34a); border-radius: 4px; }
+
+/* ── Cards ────────────────────────────────────── */
+.card {
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+html.dark  .card { background: #131929; border: 1px solid rgba(249,115,22,0.12); }
+html:not(.dark) .card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 2px 16px rgba(0,0,0,0.06); }
+
+.card:hover { transform: translateY(-2px); }
+html.dark  .card:hover { border-color: rgba(249,115,22,0.3); box-shadow: 0 12px 32px rgba(249,115,22,0.1); }
+html:not(.dark) .card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.1); }
+
+/* ── Input ────────────────────────────────────── */
+.inp {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.25s;
+  font-family: 'Inter', sans-serif;
+}
+html.dark  .inp { background: #0d1120; border: 1.5px solid rgba(249,115,22,0.2); color: #e2e8f0; }
+html:not(.dark) .inp { background: #ffffff; border: 1.5px solid #d1d5db; color: #0f172a; }
+.inp::placeholder { color: #94a3b8; }
+.inp:focus { border-color: #f97316; box-shadow: 0 0 0 3px rgba(249,115,22,0.12); }
+
+/* ── Buttons ──────────────────────────────────── */
+.btn-saffron {
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: white; font-weight: 700; border-radius: 12px;
+  padding: 14px 28px; font-size: 15px; cursor: pointer;
+  border: none; transition: all 0.25s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-saffron:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(249,115,22,0.35); }
+.btn-saffron:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.btn-ghost {
+  border-radius: 10px; padding: 10px 18px; font-size: 13px;
+  font-weight: 600; cursor: pointer; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 6px; border: none;
+}
+html.dark  .btn-ghost { background: rgba(249,115,22,0.1); color: #fb923c; border: 1px solid rgba(249,115,22,0.2); }
+html:not(.dark) .btn-ghost { background: rgba(249,115,22,0.08); color: #ea580c; border: 1px solid rgba(249,115,22,0.2); }
+.btn-ghost:hover { background: rgba(249,115,22,0.2); }
+
+.btn-green {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: white; font-weight: 700; border-radius: 12px;
+  padding: 14px 28px; font-size: 15px; cursor: pointer;
+  border: none; transition: all 0.25s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-green:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(22,163,74,0.35); }
+.btn-green:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* ── Tab buttons ──────────────────────────────── */
+.tab-btn {
+  padding: 12px 28px; border-radius: 100px; font-weight: 700;
+  font-size: 14px; cursor: pointer; transition: all 0.25s; border: none;
+  display: flex; align-items: center; gap: 8px;
+}
+.tab-btn.active-saffron {
+  background: linear-gradient(135deg,#f97316,#ea580c);
+  color: white; box-shadow: 0 6px 20px rgba(249,115,22,0.3);
+}
+.tab-btn.active-green {
+  background: linear-gradient(135deg,#16a34a,#15803d);
+  color: white; box-shadow: 0 6px 20px rgba(22,163,74,0.3);
+}
+html.dark  .tab-btn:not(.active-saffron):not(.active-green) { background: rgba(255,255,255,0.05); color: #94a3b8; }
+html:not(.dark) .tab-btn:not(.active-saffron):not(.active-green) { background: #e5e7eb; color: #64748b; }
+.tab-btn:not(.active-saffron):not(.active-green):hover { color: #f97316; }
+
+/* ── Result field row ─────────────────────────── */
+.field-row {
+  display: flex; gap: 12px; padding: 12px 0;
+}
+html.dark  .field-row { border-bottom: 1px solid rgba(255,255,255,0.05); }
+html:not(.dark) .field-row { border-bottom: 1px solid #f1f5f9; }
+
+/* ── Badge ────────────────────────────────────── */
+.badge-yes { background: rgba(22,163,74,0.12); color: #16a34a; border: 1px solid rgba(22,163,74,0.25); border-radius: 100px; padding: 2px 10px; font-size: 12px; font-weight: 700; }
+.badge-no  { background: rgba(239,68,68,0.1);  color: #ef4444;  border: 1px solid rgba(239,68,68,0.2);  border-radius: 100px; padding: 2px 10px; font-size: 12px; font-weight: 700; }
+
+/* ── Ad space ─────────────────────────────────── */
+.ad-space {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  border-radius: 10px; position: relative; overflow: hidden;
+  border: 1px dashed rgba(249,115,22,0.25);
+  background: repeating-linear-gradient(45deg,rgba(249,115,22,0.02),rgba(249,115,22,0.02) 10px,transparent 10px,transparent 20px);
+}
+.ad-label { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #94a3b8; background: rgba(249,115,22,0.08); padding: 3px 10px; border-radius: 100px; border: 1px solid rgba(249,115,22,0.15); }
+
+/* ── Gradient text ────────────────────────────── */
+.grad-text { background: linear-gradient(135deg,#f97316,#16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.grad-text-saffron { background: linear-gradient(135deg,#fb923c,#f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+/* ── Copy tooltip ─────────────────────────────── */
+.copy-btn { cursor: pointer; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; transition: all 0.2s; border: none; }
+html.dark  .copy-btn { background: rgba(249,115,22,0.1); color: #fb923c; border: 1px solid rgba(249,115,22,0.2); }
+html:not(.dark) .copy-btn { background: rgba(249,115,22,0.08); color: #ea580c; border: 1px solid rgba(249,115,22,0.2); }
+.copy-btn:hover { background: rgba(249,115,22,0.2); }
+
+/* ── Spinner ──────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { animation: spin 0.8s linear infinite; }
+
+/* ── Post office card ─────────────────────────── */
+.po-card {
+  border-radius: 12px; padding: 16px; transition: all 0.25s;
+}
+html.dark  .po-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(249,115,22,0.1); }
+html:not(.dark) .po-card { background: #fafafa; border: 1px solid #e5e7eb; }
+.po-card:hover { border-color: rgba(249,115,22,0.35); }
+
+/* ── Search mode toggle ───────────────────────── */
+.mode-btn {
+  flex: 1; padding: 10px; border-radius: 10px; font-size: 13px;
+  font-weight: 600; cursor: pointer; transition: all 0.2s; border: none;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.mode-btn.active { background: linear-gradient(135deg,#f97316,#ea580c); color: white; }
+html.dark  .mode-btn:not(.active) { background: rgba(255,255,255,0.04); color: #94a3b8; }
+html:not(.dark) .mode-btn:not(.active) { background: #f1f5f9; color: #64748b; }
+
+/* ── Pulse anim for hero ──────────────────────── */
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.float { animation: float 4s ease-in-out infinite; }

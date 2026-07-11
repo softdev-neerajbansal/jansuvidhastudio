@@ -663,7 +663,7 @@ export default function IFSCFinder({ isDark }) {
               <div className="text-5xl mb-3">🔍</div>
               <h3 className={`font-bold mb-2 ${isDark?'text-white':'text-slate-900'}`}>Search Any Branch → Get IFSC</h3>
               <p className={`text-sm mb-5 ${isDark?'text-slate-400':'text-slate-500'}`}>
-                Select your bank, enter city or branch name. Uses Razorpay's free IFSC dataset with 1,82,000+ branch records.
+                Select your bank, enter city or branch name to find the IFSC code from 1,82,000+ branch records.
               </p>
               <div className="grid sm:grid-cols-2 gap-3 text-left">
                 {[

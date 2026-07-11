@@ -62,7 +62,7 @@ export default function Footer({ isDark }) {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6"
           style={{ borderTop: isDark ? '1px solid rgba(255,255,255,0.05)' : '1px solid #f1f5f9' }}>
           <p className={`text-xs ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
-            © 2025 JanSuvidhaStudio. Data sourced from Razorpay IFSC API & India Post API.
+            © 2025 JanSuvidhaStudio. All rights reserved.
           </p>
           <p className={`text-xs text-center ${isDark ? 'text-slate-600' : 'text-slate-400'}`}>
             ⚠️ For informational purposes only. Always verify with your bank before transactions.

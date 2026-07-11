@@ -108,6 +108,33 @@ const PAGES = {
   aadhar:  (p) => <AadharServices {...p} />,
 }
 
+/* ── Per-page SEO metadata ─────────────────────────────────── */
+const PAGE_SEO = {
+  home:    { title: "JanSuvidhaStudio | India's Free Info & Services Hub",       desc: "India's #1 free services hub – IFSC codes, PIN codes, PAN validation, UPI checker, Train PNR, Govt Jobs, Sarkari Results, Voter ID, Aadhar and more." },
+  ifsc:    { title: "IFSC Code Finder | JanSuvidhaStudio",                       desc: "Find the IFSC code for any bank branch in India instantly. Search by bank name, branch, city or IFSC code – free and accurate." },
+  pin:     { title: "PIN Code & Post Office Finder | JanSuvidhaStudio",          desc: "Look up PIN codes and post office details across India. Search by area, district or PIN code – free, fast and accurate." },
+  pan:     { title: "PAN Card Validator | JanSuvidhaStudio",                     desc: "Validate any PAN card number online for free. Instantly check PAN format, category, and owner type without registration." },
+  upi:     { title: "UPI ID Checker | JanSuvidhaStudio",                        desc: "Verify any UPI Virtual Payment Address (VPA) for free. Check if a UPI ID is valid before making a payment." },
+  pnr:     { title: "Train PNR Status Checker | JanSuvidhaStudio",               desc: "Check your Indian Railways PNR status in real time. Get confirmed seat, coach, berth, and journey details instantly." },
+  jobs:    { title: "Latest Government Jobs India | JanSuvidhaStudio",           desc: "Browse the latest sarkari naukri, central and state government job notifications, recruitment alerts and application deadlines." },
+  sarkari: { title: "Sarkari Result – Exam Results & Admit Cards | JanSuvidhaStudio", desc: "Check Sarkari Results, government exam results, admit cards, answer keys and merit lists for all Indian competitive exams." },
+  ration:  { title: "Ration Card Status Check | JanSuvidhaStudio",               desc: "Check your ration card status, beneficiary details, and PDS allocation online. Supports APL, BPL, and AAY card categories." },
+  voter:   { title: "Voter ID Card Search | JanSuvidhaStudio",                   desc: "Search and verify voter ID card details across India. Check voter registration status, polling booth, and EPIC details free." },
+  aadhar:  { title: "Aadhar Card Services | JanSuvidhaStudio",                   desc: "Access Aadhar card services online – download e-Aadhaar, check update status, verify Aadhar number, and more for free." },
+}
+
+function applyPageSEO(tabId) {
+  const seo = PAGE_SEO[tabId] || PAGE_SEO.home
+  document.title = seo.title
+  const set = (sel, val) => { const el = document.querySelector(sel); if (el) el.setAttribute('content', val) }
+  set('meta[name="description"]',          seo.desc)
+  set('meta[name="title"]',                seo.title)
+  set('meta[property="og:title"]',         seo.title)
+  set('meta[property="og:description"]',   seo.desc)
+  set('meta[name="twitter:title"]',        seo.title)
+  set('meta[name="twitter:description"]',  seo.desc)
+}
+
 /* ── App ───────────────────────────────────────────────────── */
 export default function App() {
   const [isDark, setIsDark]       = useState(() => localStorage.getItem('js-theme') === 'dark')
@@ -124,11 +151,13 @@ export default function App() {
     document.documentElement.classList.toggle('dark', isDark)
   }, [])
 
+  useEffect(() => { applyPageSEO(activeTab) }, [activeTab])
+
   const navigate = (tab) => { setActiveTab(tab); window.scrollTo(0,0) }
 
   return (
     <div className={isDark ? 'dark' : ''}>
-      <div className="min-h-screen" style={{ background: isDark ? '#0a0d16' : '#f3f4f8' }}>
+      <div className="min-h-screen" style={{ background: isDark ? '#07090f' : '#f8fafc' }}>
         <Navbar isDark={isDark} toggleTheme={toggleTheme} activeTab={activeTab} setActiveTab={navigate} />
 
         {/* Offset for 2-row sticky header */}

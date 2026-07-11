@@ -35,9 +35,10 @@ export default function Navbar({ isDark, toggleTheme, activeTab, setActiveTab })
       {/* ── Row 1: Logo + actions ───────────────────── */}
       <div className={`transition-all duration-300 ${scrolled ? 'py-2' : 'py-3'}`}
         style={{
-          background: isDark ? 'rgba(10,13,22,0.96)' : 'rgba(248,250,252,0.96)',
-          backdropFilter: 'blur(16px)',
-          borderBottom: isDark ? '1px solid rgba(249,115,22,0.1)' : '1px solid #e5e7eb',
+          background: isDark ? 'rgba(7,9,15,0.95)' : 'rgba(248,250,252,0.95)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid #e2e8f0',
         }}>
         <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
           <button onClick={() => setActiveTab('home')} className="flex items-center gap-2 group">
@@ -71,11 +72,11 @@ export default function Navbar({ isDark, toggleTheme, activeTab, setActiveTab })
 
       {/* ── Row 2: Scrollable tab strip ─────────────── */}
       <div className="relative"
-        style={{ background: isDark ? '#0d1020' : '#ffffff', borderBottom: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid #e5e7eb' }}>
+        style={{ background: isDark ? '#0d1221' : '#ffffff', borderBottom: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid #e2e8f0' }}>
         {/* Left scroll arrow */}
         <button onClick={() => scrollTabs(-1)}
           className="absolute left-0 top-0 bottom-0 z-10 flex items-center justify-center w-8 pl-1"
-          style={{ background: isDark ? 'linear-gradient(to right,#0d1020 60%,transparent)' : 'linear-gradient(to right,white 60%,transparent)' }}>
+          style={{ background: isDark ? 'linear-gradient(to right,#0d1221 60%,transparent)' : 'linear-gradient(to right,white 60%,transparent)' }}>
           <ChevronLeft size={16} className={isDark?'text-slate-400':'text-slate-500'} />
         </button>
 
@@ -100,7 +101,7 @@ export default function Navbar({ isDark, toggleTheme, activeTab, setActiveTab })
         {/* Right scroll arrow */}
         <button onClick={() => scrollTabs(1)}
           className="absolute right-0 top-0 bottom-0 z-10 flex items-center justify-center w-8 pr-1"
-          style={{ background: isDark ? 'linear-gradient(to left,#0d1020 60%,transparent)' : 'linear-gradient(to left,white 60%,transparent)' }}>
+          style={{ background: isDark ? 'linear-gradient(to left,#0d1221 60%,transparent)' : 'linear-gradient(to left,white 60%,transparent)' }}>
           <ChevronRight size={16} className={isDark?'text-slate-400':'text-slate-500'} />
         </button>
       </div>
@@ -108,7 +109,7 @@ export default function Navbar({ isDark, toggleTheme, activeTab, setActiveTab })
       {/* Mobile drawer */}
       {menuOpen && (
         <div className="md:hidden grid grid-cols-3 gap-2 p-3"
-          style={{ background: isDark?'#0a0d16':'#f8fafc', borderBottom: isDark?'1px solid rgba(249,115,22,0.1)':'1px solid #e5e7eb' }}>
+          style={{ background: isDark?'#07090f':'#f8fafc', borderBottom: isDark?'1px solid rgba(255,255,255,0.07)':'1px solid #e2e8f0' }}>
           {ALL_TABS.map(tab => (
             <button key={tab.id} onClick={() => { setActiveTab(tab.id); setMenuOpen(false) }}
               className="flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl text-xs font-semibold transition-all"

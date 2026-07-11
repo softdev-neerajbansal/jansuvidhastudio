@@ -27,3 +27,4 @@ export const AD_SLOTS = {
 export const IFSC_API    = '/api/ifsc.php'      // ?code=SBIN0005943
 export const PINCODE_API = '/api/pincode.php'   // ?pin=250001
 export const POSTOFF_API = '/api/postoffice.php' // ?name=Meerut
+export const CHAT_API    = '/api/chat.php'      // POST { messages: [{role, content}] }

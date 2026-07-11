@@ -12,6 +12,7 @@ import VoterID               from './components/VoterID.jsx'
 import AadharServices        from './components/AadharServices.jsx'
 import AdBanner              from './components/AdBanner.jsx'
 import Footer                from './components/Footer.jsx'
+import ChatBot                from './components/ChatBot.jsx'
 import { Search, ChevronRight } from 'lucide-react'
 
 /* ── Home page ─────────────────────────────────────────────── */
@@ -166,6 +167,7 @@ export default function App() {
         </main>
 
         <Footer isDark={isDark} />
+        <ChatBot isDark={isDark} />
       </div>
     </div>
   )

@@ -1,8 +1,90 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig({
-  plugins: [react()],
+const CHAT_SYSTEM_PROMPT = `You are the help assistant embedded on JanSuvidhaStudio, a free Indian public-services website.
+The site offers: IFSC code finder, PIN code & post office finder, PAN card validator, UPI ID checker,
+Train PNR status checker, Govt Jobs listings, Sarkari Result checker, Ration Card status check,
+Voter ID search, and Aadhar card services — all free, no login required.
+
+Help visitors find the right tool and answer general questions about these topics (banking codes,
+postal system, PAN/Aadhar/Voter ID basics, train travel, government jobs and exams). When relevant,
+tell the user which section of the site to open (e.g. "Open the IFSC Code Finder tab").
+Keep answers short and clear — this is a small chat widget, not a long-form article.
+If asked something unrelated to these services or to India-related public information, politely
+redirect to what the site can help with. Never ask for or store sensitive personal data (full PAN,
+Aadhar number, bank account numbers) — explain the user can look these up directly in the relevant tool.`
+
+// Dev-only stand-in for public/api/chat.php (no local PHP server available under `vite dev`).
+// Mirrors the PHP endpoint's request/response contract exactly; production always uses the real PHP file.
+function chatDevMiddleware(apiKey) {
+  return {
+    name: 'chat-dev-middleware',
+    configureServer(server) {
+      server.middlewares.use('/api/chat.php', async (req, res) => {
+        if (req.method !== 'POST') { res.statusCode = 405; res.end('{"error":"Method not allowed"}'); return }
+        if (!apiKey) { res.statusCode = 500; res.end(JSON.stringify({ error: 'Set ANTHROPIC_API_KEY in .env to use the chat widget locally.' })); return }
+
+        let raw = ''
+        req.on('data', (chunk) => { raw += chunk })
+        req.on('end', async () => {
+          try {
+            const payload  = JSON.parse(raw || '{}')
+            const messages = (Array.isArray(payload.messages) ? payload.messages : [])
+              .slice(-10)
+              .filter(m => m && ['user', 'assistant'].includes(m.role) && typeof m.content === 'string' && m.content.trim() !== '')
+              .map(m => ({ role: m.role, content: m.content.trim().slice(0, 2000) }))
+
+            if (!messages.length || messages[messages.length - 1].role !== 'user') {
+              res.statusCode = 400; res.end('{"error":"No message provided"}'); return
+            }
+
+            const upstream = await fetch('https://api.anthropic.com/v1/messages', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+              },
+              body: JSON.stringify({
+                model: 'claude-opus-4-8',
+                max_tokens: 1024,
+                system: CHAT_SYSTEM_PROMPT,
+                output_config: { effort: 'low' },
+                messages,
+              }),
+            })
+            const data = await upstream.json()
+
+            if (!upstream.ok) {
+              res.statusCode = upstream.status
+              res.end(JSON.stringify({ error: data?.error?.message || 'Chat service error.' }))
+              return
+            }
+
+            let reply = ''
+            if (data.stop_reason === 'refusal') {
+              reply = "I can't help with that. Try asking about one of our services instead."
+            } else {
+              reply = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('')
+            }
+
+            res.setHeader('Content-Type', 'application/json; charset=utf-8')
+            res.end(JSON.stringify({ reply: reply || "Sorry, I didn't catch that — could you rephrase?" }))
+          } catch (e) {
+            res.statusCode = 502
+            res.end(JSON.stringify({ error: 'Could not reach the chat service.' }))
+          }
+        })
+      })
+    },
+  }
+}
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+
+  return {
+  plugins: [react(), chatDevMiddleware(env.ANTHROPIC_API_KEY)],
   server: {
     proxy: {
       // /api/ifsc.php?code=SBIN0005943 → https://ifsc.razorpay.com/SBIN0005943
@@ -45,4 +127,5 @@ export default defineConfig({
       },
     },
   },
+  }
 })

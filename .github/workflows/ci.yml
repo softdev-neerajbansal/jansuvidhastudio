@@ -54,70 +54,47 @@ jobs:
             git push
           fi
 
-      - name: Discover the live document root on the FTP account
-        id: discover
-        env:
-          FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-        run: |
-          echo "===================================================="
-          echo "VERBOSE diagnostic listing of the FTP account root."
-          echo "(host/username values are auto-masked by GitHub below)"
-          echo "===================================================="
-          curl -v --ftp-ssl --ftp-pasv --connect-timeout 20 --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_HOST/" 2>&1 || true
-          echo
-          echo "===================================================="
-          echo "Same listing WITHOUT forcing TLS, in case the server"
-          echo "only supports plain FTP"
-          echo "===================================================="
-          curl -v --ftp-pasv --connect-timeout 20 --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_HOST/" 2>&1 || true
-
-          CANDIDATES=("" "public_html/" "public_html/jansuvidhastudio/" "domains/mantrikatech.com/public_html/jansuvidhastudio/")
-          FOUND=""
-          for dir in "${CANDIDATES[@]}"; do
-            listing=$(curl -s --ftp-pasv --connect-timeout 15 --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_HOST/$dir" || true)
-            if echo "$listing" | grep -qi "index.html"; then
-              FOUND="$dir"
-              break
-            fi
-          done
-          echo "server_dir=./$FOUND" >> "$GITHUB_ENV"
-
-      - name: Deploy dist/ to Hostinger via FTP
-        id: ftp-deploy-1
+      # FTP from GitHub-hosted runners to Hostinger proved unreliable — the host's
+      # firewall appears to throttle/block automated FTP connections from cloud IPs
+      # (control-socket timeouts). SSH is not subject to the same restriction.
+      - name: Deploy dist/ to Hostinger via SSH (SCP)
+        id: ssh-deploy-1
         continue-on-error: true
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: appleboy/scp-action@v0.1.7
         with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/
-          server-dir: ${{ env.server_dir }}
-          log-level: verbose
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: "dist/*"
+          target: "public_html/jansuvidhastudio/"
+          strip_components: 1
+          overwrite: true
 
-      # Shared-hosting FTP servers occasionally drop the control connection mid-transfer
-      # (ECONNRESET), especially on larger files — retry once or twice before failing the job.
-      - name: Retry FTP deploy (attempt 2)
-        id: ftp-deploy-2
-        if: steps.ftp-deploy-1.outcome == 'failure'
+      - name: Retry SSH deploy (attempt 2)
+        id: ssh-deploy-2
+        if: steps.ssh-deploy-1.outcome == 'failure'
         continue-on-error: true
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: appleboy/scp-action@v0.1.7
         with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/
-          server-dir: ${{ env.server_dir }}
-          log-level: verbose
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: "dist/*"
+          target: "public_html/jansuvidhastudio/"
+          strip_components: 1
+          overwrite: true
 
-      - name: Retry FTP deploy (attempt 3)
-        if: steps.ftp-deploy-1.outcome == 'failure' && steps.ftp-deploy-2.outcome == 'failure'
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: Retry SSH deploy (attempt 3)
+        if: steps.ssh-deploy-1.outcome == 'failure' && steps.ssh-deploy-2.outcome == 'failure'
+        uses: appleboy/scp-action@v0.1.7
         with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist/
-          server-dir: ${{ env.server_dir }}
-          log-level: verbose
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: "dist/*"
+          target: "public_html/jansuvidhastudio/"
+          strip_components: 1
+          overwrite: true

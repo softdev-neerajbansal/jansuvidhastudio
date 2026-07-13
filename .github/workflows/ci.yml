@@ -54,6 +54,31 @@ jobs:
             git push
           fi
 
+      - name: Discover the live document root on the FTP account
+        id: discover
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          CANDIDATES=("" "public_html/" "public_html/jansuvidhastudio/" "domains/mantrikatech.com/public_html/jansuvidhastudio/")
+          FOUND=""
+          for dir in "${CANDIDATES[@]}"; do
+            echo "---- Listing ftp://\$FTP_HOST/$dir ----"
+            listing=$(curl -s --connect-timeout 15 --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_HOST/$dir" || true)
+            echo "$listing"
+            echo
+            if echo "$listing" | grep -qi "index.html"; then
+              echo "==> index.html found here — using this as the deploy target"
+              FOUND="$dir"
+              break
+            fi
+          done
+          if [ -z "$FOUND" ] && [ -n "$listing" ]; then
+            echo "No candidate matched — defaulting to account root ./"
+          fi
+          echo "server_dir=./$FOUND" >> "$GITHUB_ENV"
+
       - name: Deploy dist/ to Hostinger via FTP
         id: ftp-deploy-1
         continue-on-error: true
@@ -63,7 +88,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: ./
+          server-dir: ${{ env.server_dir }}
           log-level: verbose
 
       # Shared-hosting FTP servers occasionally drop the control connection mid-transfer
@@ -78,7 +103,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: ./
+          server-dir: ${{ env.server_dir }}
           log-level: verbose
 
       - name: Retry FTP deploy (attempt 3)
@@ -89,5 +114,5 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: ./
+          server-dir: ${{ env.server_dir }}
           log-level: verbose

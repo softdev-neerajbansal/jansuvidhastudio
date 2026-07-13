@@ -40,7 +40,16 @@ if (empty($clean) || end($clean)['role'] !== 'user') {
     exit;
 }
 
+// Prefer a real environment variable; fall back to a local, untracked config file
+// (config.local.php, created directly on the server — never committed to git,
+// never touched by deploys) for hosts where setting PHP env vars isn't practical.
 $apiKey = getenv('ANTHROPIC_API_KEY');
+if (!$apiKey) {
+    $localConfig = __DIR__ . '/config.local.php';
+    if (file_exists($localConfig)) {
+        $apiKey = (include $localConfig)['ANTHROPIC_API_KEY'] ?? null;
+    }
+}
 if (!$apiKey) {
     http_response_code(500);
     echo '{"error":"Chat is not configured yet. Please try again later."}';

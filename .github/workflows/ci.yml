@@ -54,6 +54,33 @@ jobs:
             git push
           fi
 
+      - name: Verify the SSH account and target directory
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            echo "== whoami / pwd =="
+            whoami
+            pwd
+            echo
+            echo "== home directory listing =="
+            ls -la ~
+            echo
+            echo "== ~/public_html listing (if it exists) =="
+            ls -la ~/public_html 2>&1 || echo "public_html not found here"
+            echo
+            echo "== ~/public_html/jansuvidhastudio listing (if it exists) =="
+            ls -la ~/public_html/jansuvidhastudio 2>&1 || echo "not found"
+            echo
+            echo "== current asset hash in that index.html, if present =="
+            grep -o 'assets/index-[a-z0-9]*\.\(js\|css\)' ~/public_html/jansuvidhastudio/index.html 2>&1 || echo "index.html not found or no match"
+            echo
+            echo "== ~/domains listing (if it exists — some Hostinger plans nest docroots here) =="
+            find ~/domains -maxdepth 3 2>&1 || echo "no domains folder"
+
       # FTP from GitHub-hosted runners to Hostinger proved unreliable — the host's
       # firewall appears to throttle/block automated FTP connections from cloud IPs
       # (control-socket timeouts). SSH is not subject to the same restriction.

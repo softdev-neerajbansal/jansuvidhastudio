@@ -43,11 +43,11 @@ if (empty($clean) || end($clean)['role'] !== 'user') {
 // Prefer a real environment variable; fall back to a local, untracked config file
 // (config.local.php, created directly on the server — never committed to git,
 // never touched by deploys) for hosts where setting PHP env vars isn't practical.
-$apiKey = getenv('ANTHROPIC_API_KEY');
+$apiKey = getenv('GEMINI_API_KEY');
 if (!$apiKey) {
     $localConfig = __DIR__ . '/config.local.php';
     if (file_exists($localConfig)) {
-        $apiKey = (include $localConfig)['ANTHROPIC_API_KEY'] ?? null;
+        $apiKey = (include $localConfig)['GEMINI_API_KEY'] ?? null;
     }
 }
 if (!$apiKey) {
@@ -71,25 +71,29 @@ redirect to what the site can help with. Never ask for or store sensitive person
 Aadhar number, bank account numbers) — explain the user can look these up directly in the relevant tool.
 SYS;
 
+// Gemini uses "user" / "model" roles instead of "user" / "assistant"
+$contents = [];
+foreach ($clean as $m) {
+    $contents[] = [
+        'role'  => $m['role'] === 'assistant' ? 'model' : 'user',
+        'parts' => [['text' => $m['content']]],
+    ];
+}
+
 $body = json_encode([
-    'model'         => 'claude-opus-4-8',
-    'max_tokens'    => 1024,
-    'system'        => $systemPrompt,
-    'output_config' => ['effort' => 'low'],
-    'messages'      => $clean,
+    'system_instruction' => ['parts' => [['text' => $systemPrompt]]],
+    'contents'           => $contents,
+    'generationConfig'   => ['maxOutputTokens' => 1024],
 ]);
 
-$ch = curl_init('https://api.anthropic.com/v1/messages');
+$model = 'gemini-2.0-flash';
+$ch = curl_init("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . urlencode($apiKey));
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST           => true,
     CURLOPT_POSTFIELDS     => $body,
     CURLOPT_TIMEOUT        => 30,
-    CURLOPT_HTTPHEADER     => [
-        'Content-Type: application/json',
-        'x-api-key: ' . $apiKey,
-        'anthropic-version: 2023-06-01',
-    ],
+    CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
 ]);
 $response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -111,12 +115,12 @@ if ($httpCode !== 200) {
 }
 
 $reply = '';
-if (($data['stop_reason'] ?? '') === 'refusal') {
-    $reply = "I can't help with that. Try asking about one of our services instead.";
-} elseif (!empty($data['content'])) {
-    foreach ($data['content'] as $block) {
-        if (($block['type'] ?? '') === 'text') $reply .= $block['text'];
+if (!empty($data['candidates'][0]['content']['parts'])) {
+    foreach ($data['candidates'][0]['content']['parts'] as $part) {
+        if (isset($part['text'])) $reply .= $part['text'];
     }
+} elseif (!empty($data['promptFeedback']['blockReason'])) {
+    $reply = "I can't help with that. Try asking about one of our services instead.";
 }
 
 echo json_encode(['reply' => $reply !== '' ? $reply : "Sorry, I didn't catch that — could you rephrase?"]);

@@ -61,22 +61,27 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
+          echo "===================================================="
+          echo "VERBOSE diagnostic listing of the FTP account root."
+          echo "(host/username values are auto-masked by GitHub below)"
+          echo "===================================================="
+          curl -v --ftp-ssl --ftp-pasv --connect-timeout 20 --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_HOST/" 2>&1 || true
+          echo
+          echo "===================================================="
+          echo "Same listing WITHOUT forcing TLS, in case the server"
+          echo "only supports plain FTP"
+          echo "===================================================="
+          curl -v --ftp-pasv --connect-timeout 20 --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_HOST/" 2>&1 || true
+
           CANDIDATES=("" "public_html/" "public_html/jansuvidhastudio/" "domains/mantrikatech.com/public_html/jansuvidhastudio/")
           FOUND=""
           for dir in "${CANDIDATES[@]}"; do
-            echo "---- Listing ftp://\$FTP_HOST/$dir ----"
-            listing=$(curl -s --connect-timeout 15 --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_HOST/$dir" || true)
-            echo "$listing"
-            echo
+            listing=$(curl -s --ftp-pasv --connect-timeout 15 --user "$FTP_USERNAME:$FTP_PASSWORD" "ftp://$FTP_HOST/$dir" || true)
             if echo "$listing" | grep -qi "index.html"; then
-              echo "==> index.html found here — using this as the deploy target"
               FOUND="$dir"
               break
             fi
           done
-          if [ -z "$FOUND" ] && [ -n "$listing" ]; then
-            echo "No candidate matched — defaulting to account root ./"
-          fi
           echo "server_dir=./$FOUND" >> "$GITHUB_ENV"
 
       - name: Deploy dist/ to Hostinger via FTP

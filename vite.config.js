@@ -22,7 +22,7 @@ function chatDevMiddleware(apiKey) {
     configureServer(server) {
       server.middlewares.use('/api/chat.php', async (req, res) => {
         if (req.method !== 'POST') { res.statusCode = 405; res.end('{"error":"Method not allowed"}'); return }
-        if (!apiKey) { res.statusCode = 500; res.end(JSON.stringify({ error: 'Set ANTHROPIC_API_KEY in .env to use the chat widget locally.' })); return }
+        if (!apiKey) { res.statusCode = 500; res.end(JSON.stringify({ error: 'Set GEMINI_API_KEY in .env to use the chat widget locally.' })); return }
 
         let raw = ''
         req.on('data', (chunk) => { raw += chunk })
@@ -38,19 +38,17 @@ function chatDevMiddleware(apiKey) {
               res.statusCode = 400; res.end('{"error":"No message provided"}'); return
             }
 
-            const upstream = await fetch('https://api.anthropic.com/v1/messages', {
+            const model = 'gemini-2.0-flash'
+            const upstream = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01',
-              },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                model: 'claude-opus-4-8',
-                max_tokens: 1024,
-                system: CHAT_SYSTEM_PROMPT,
-                output_config: { effort: 'low' },
-                messages,
+                system_instruction: { parts: [{ text: CHAT_SYSTEM_PROMPT }] },
+                contents: messages.map(m => ({
+                  role: m.role === 'assistant' ? 'model' : 'user',
+                  parts: [{ text: m.content }],
+                })),
+                generationConfig: { maxOutputTokens: 1024 },
               }),
             })
             const data = await upstream.json()
@@ -62,10 +60,11 @@ function chatDevMiddleware(apiKey) {
             }
 
             let reply = ''
-            if (data.stop_reason === 'refusal') {
+            const parts = data?.candidates?.[0]?.content?.parts
+            if (parts) {
+              reply = parts.filter(p => p.text).map(p => p.text).join('')
+            } else if (data?.promptFeedback?.blockReason) {
               reply = "I can't help with that. Try asking about one of our services instead."
-            } else {
-              reply = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('')
             }
 
             res.setHeader('Content-Type', 'application/json; charset=utf-8')
@@ -84,7 +83,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
-  plugins: [react(), chatDevMiddleware(env.ANTHROPIC_API_KEY)],
+  plugins: [react(), chatDevMiddleware(env.GEMINI_API_KEY)],
   server: {
     proxy: {
       // /api/ifsc.php?code=SBIN0005943 → https://ifsc.razorpay.com/SBIN0005943

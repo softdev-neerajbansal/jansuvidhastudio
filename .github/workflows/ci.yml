@@ -54,6 +54,20 @@ jobs:
             git push
           fi
 
+      # Written into dist/ (never committed — the commit step above already ran) so the
+      # deploy step below places it automatically in the same folder as the other PHP
+      # files, avoiding manual navigation into the account's folder structure.
+      - name: Write Gemini config for deploy
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          cat > dist/api/config.local.php <<PHP
+          <?php
+          return [
+              'GEMINI_API_KEY' => '$GEMINI_API_KEY',
+          ];
+          PHP
+
       # Matches the proven-working Hostinger deploy pattern from mantrikatech-solutions:
       # explicit ftps + loose security (Hostinger needs this handshake), absolute server-dir.
       - name: Deploy dist/ to Hostinger via FTPS

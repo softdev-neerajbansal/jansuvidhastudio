@@ -1,6 +1,20 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 
+// Temporary safe diagnostic — reveals only key length/source, never the secret itself.
+if (isset($_GET['debug'])) {
+    $envKey = getenv('GEMINI_API_KEY');
+    $localConfig = __DIR__ . '/config.local.php';
+    $localExists = file_exists($localConfig);
+    $localKey = $localExists ? ((include $localConfig)['GEMINI_API_KEY'] ?? null) : null;
+    echo json_encode([
+        'env_key_length'   => $envKey ? strlen($envKey) : 0,
+        'config_file_exists' => $localExists,
+        'config_key_length'  => $localKey ? strlen($localKey) : 0,
+    ]);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo '{"error":"Method not allowed"}';
